@@ -17,30 +17,10 @@ twice.
 
 ## Architecture
 
-```
-                          Browser
-                             │
-                             ▼
-              src/proxy.ts — coarse, optimistic gate:
-              is there a well-formed, unexpired session cookie?
-                             │
-        ┌────────────────────┼─────────────────────┐
-        ▼                    ▼                      ▼
-  Server Components    Route Handlers          Route Handlers
-  (dashboard pages)    (/api/tickets/*)        (/api/jobs/*, /api/auth/*)
-        │                    │                      │
-        └─────────┬──────────┴──────────────────────┘
-                   ▼
-   lib/session.ts + lib/rbac.ts — the REAL authorization boundary.
-   Every mutating route re-verifies the session and role itself,
-   regardless of what Proxy already checked or what the UI hides.
-                   │
-                   ▼
-        lib/tickets.ts / lib/jobs.ts  (business logic)
-                   │
-                   ▼
-     Prisma (driver adapter) ──▶ SQLite (dev.db)
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/architecture-dark.png">
+  <img src="docs/architecture-light.png" alt="Browser sends a session cookie through proxy.ts's coarse gate, then branches across Server Components and Route Handlers, all converging on lib/session.ts + lib/rbac.ts as the real authorization boundary, then business logic in lib/tickets.ts and lib/jobs.ts, then Prisma to SQLite.">
+</picture>
 
 - **Auth**: `lib/auth.ts` is pure crypto (bcryptjs password hashing, `jose`
   JWT sign/verify) with no framework dependency, so it's directly unit-tested.
